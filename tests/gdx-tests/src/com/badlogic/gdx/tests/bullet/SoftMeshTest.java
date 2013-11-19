@@ -25,23 +25,23 @@ import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
+import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.materials.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.materials.Material;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.physics.bullet.btAxisSweep3;
-import com.badlogic.gdx.physics.bullet.btCollisionDispatcher;
-import com.badlogic.gdx.physics.bullet.btCollisionObject;
-import com.badlogic.gdx.physics.bullet.btDefaultCollisionConfiguration;
-import com.badlogic.gdx.physics.bullet.btSequentialImpulseConstraintSolver;
-import com.badlogic.gdx.physics.bullet.btSoftBody;
-import com.badlogic.gdx.physics.bullet.btSoftBodyRigidBodyCollisionConfiguration;
-import com.badlogic.gdx.physics.bullet.btSoftBodyWorldInfo;
-import com.badlogic.gdx.physics.bullet.btSoftRigidDynamicsWorld;
+import com.badlogic.gdx.physics.bullet.collision.btAxisSweep3;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionDispatcher;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
+import com.badlogic.gdx.physics.bullet.collision.btDefaultCollisionConfiguration;
+import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver;
+import com.badlogic.gdx.physics.bullet.softbody.btSoftBody;
+import com.badlogic.gdx.physics.bullet.softbody.btSoftBodyRigidBodyCollisionConfiguration;
+import com.badlogic.gdx.physics.bullet.softbody.btSoftBodyWorldInfo;
+import com.badlogic.gdx.physics.bullet.softbody.btSoftRigidDynamicsWorld;
 import com.badlogic.gdx.utils.BufferUtils;
 
 /** @author xoppa */
@@ -64,9 +64,9 @@ public class SoftMeshTest extends BaseBulletTest {
 		btSoftRigidDynamicsWorld dynamicsWorld = new btSoftRigidDynamicsWorld(dispatcher, broadphase, solver, collisionConfiguration);
 		
 		worldInfo = new btSoftBodyWorldInfo();
-		worldInfo.setM_broadphase(broadphase);
-		worldInfo.setM_dispatcher(dispatcher);
-		worldInfo.getM_sparsesdf().Initialize();
+		worldInfo.setBroadphase(broadphase);
+		worldInfo.setDispatcher(dispatcher);
+		worldInfo.getSparsesdf().Initialize();
 		
 		return new BulletWorld(collisionConfiguration, dispatcher, broadphase, solver, dynamicsWorld);
 	}
@@ -96,9 +96,9 @@ public class SoftMeshTest extends BaseBulletTest {
 			meshPart.indexOffset, meshPart.numVertices, indexMap, 0);
 		// Set mass of the first vertex to zero so its unmovable, comment out this line to make it a fully dynamic body.
 		softBody.setMass(0, 0);
-		com.badlogic.gdx.physics.bullet.Material pm = softBody.appendMaterial();
-		pm.setM_kLST(0.2f);
-		pm.setM_flags(0);
+		com.badlogic.gdx.physics.bullet.softbody.Material pm = softBody.appendMaterial();
+		pm.setKLST(0.2f);
+		pm.setFlags(0);
 		softBody.generateBendingConstraints(2, pm);
 		// Be careful increasing iterations, it decreases performance (but increases accuracy). 
 		softBody.setConfig_piterations(7);
@@ -114,13 +114,13 @@ public class SoftMeshTest extends BaseBulletTest {
 	@Override
 	public void dispose () {
 		((btSoftRigidDynamicsWorld)(world.collisionWorld)).removeSoftBody(softBody);
-		softBody.delete();
+		softBody.dispose();
 		softBody = null;
 		indexMap = null;
 		
 		super.dispose();
 		
-		worldInfo.delete();
+		worldInfo.dispose();
 		worldInfo = null;
 		model.dispose();
 		model = null;

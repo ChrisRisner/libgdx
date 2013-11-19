@@ -124,6 +124,10 @@ struct	Config
 %template(btSparseSdf3) btSparseSdf<3>;
 
 %typemap(javaimports) btSoftBody %{
+import com.badlogic.gdx.physics.bullet.BulletBase;
+import com.badlogic.gdx.physics.bullet.linearmath.*;
+import com.badlogic.gdx.physics.bullet.collision.*;
+import com.badlogic.gdx.physics.bullet.dynamics.*;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Matrix3;
@@ -135,6 +139,14 @@ import com.badlogic.gdx.graphics.g3d.model.MeshPart;
 %{
 #include <BulletSoftBody/btSoftBody.h>
 %}
+
+%ignore btSoftBody::getWorldInfo;
+%ignore btSoftBody::getRestLengthScale;
+%ignore btSoftBody::setRestLengthScale;
+%ignore btSoftBody::getWindVelocity;
+%ignore btSoftBody::setSoftBodySolver;
+%ignore btSoftBody::getSoftBodySolver;
+
 %include "BulletSoftBody/btSoftBody.h"
 
 %extend btSoftBody {

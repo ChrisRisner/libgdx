@@ -19,11 +19,10 @@ import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Matrix4;
-import com.badlogic.gdx.physics.bullet.btCollisionObject;
-import com.badlogic.gdx.physics.bullet.btCollisionShape;
-import com.badlogic.gdx.physics.bullet.btMotionState;
-import com.badlogic.gdx.physics.bullet.btRigidBody;
-import com.badlogic.gdx.physics.bullet.btRigidBodyConstructionInfo;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBodyConstructionInfo;
+import com.badlogic.gdx.physics.bullet.linearmath.btMotionState;
 import com.badlogic.gdx.utils.Disposable;
 
 /** @author xoppa
@@ -75,7 +74,7 @@ public class BulletEntity extends BaseEntity {
 		body = null;
 	}
 	
-	static class MotionState extends btMotionState implements Disposable {
+	static class MotionState extends btMotionState {
 		private final Matrix4 transform;
 		
 		public MotionState(final Matrix4 transform) {
@@ -97,11 +96,6 @@ public class BulletEntity extends BaseEntity {
 		@Override
 		public void setWorldTransform (final Matrix4 worldTrans) {
 			transform.set(worldTrans);
-		}
-		
-		@Override
-		public void dispose () {
-			delete();
 		}
 	}
 }

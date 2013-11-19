@@ -291,16 +291,28 @@
 %{
 #include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
 %}
+
 %include "BulletCollision/CollisionDispatch/btCollisionWorld.h"
 
 %{
-typedef btCollisionWorld::LocalShapeInfo LocalShapeInfo;
-typedef btCollisionWorld::LocalRayResult LocalRayResult;
-typedef btCollisionWorld::RayResultCallback RayResultCallback;
-typedef btCollisionWorld::ClosestRayResultCallback ClosestRayResultCallback;
-typedef btCollisionWorld::AllHitsRayResultCallback AllHitsRayResultCallback;
-typedef btCollisionWorld::LocalConvexResult LocalConvexResult;
-typedef btCollisionWorld::ConvexResultCallback ConvexResultCallback;
-typedef btCollisionWorld::ClosestConvexResultCallback ClosestConvexResultCallback;
-typedef btCollisionWorld::ContactResultCallback ContactResultCallback;
+	typedef btCollisionWorld::LocalShapeInfo LocalShapeInfo;
+	typedef btCollisionWorld::LocalRayResult LocalRayResult;
+	typedef btCollisionWorld::RayResultCallback RayResultCallback;
+	typedef btCollisionWorld::ClosestRayResultCallback ClosestRayResultCallback;
+	typedef btCollisionWorld::AllHitsRayResultCallback AllHitsRayResultCallback;
+	typedef btCollisionWorld::LocalConvexResult LocalConvexResult;
+	typedef btCollisionWorld::ConvexResultCallback ConvexResultCallback;
+	typedef btCollisionWorld::ClosestConvexResultCallback ClosestConvexResultCallback;
+	typedef btCollisionWorld::ContactResultCallback ContactResultCallback;
 %}
+
+//%extend AllHitsRayResultCallback {
+//	int getCollisionObjectsCount() { return m_collisionObjects.size(); }
+//	btCollisionObject* getCollisionObject(int index) { return m_collisionObjects.at(index); }
+//	int getHitNormalWorldCount() { return m_hitNormalWorld.size(); }
+//	btVector3 getHitNormalWorld(int index) { return m_hitNormalWorld.at(index); }
+//	int getHitPointWorldCount() { return m_hitPointWorld.size(); }
+//	btVector3 getHitPointWorld(int index) { return m_hitPointWorld.at(index); }
+//	int getHitFractionsCount() { return m_hitFractions.size(); }
+//	btScalar getHitFraction(int index) { return m_hitFractions.at(index); }
+//};

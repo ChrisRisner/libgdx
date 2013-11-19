@@ -20,57 +20,41 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
+import com.badlogic.gdx.graphics.g3d.Environment;
+import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.graphics.g3d.lights.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.lights.Lights;
-import com.badlogic.gdx.graphics.g3d.materials.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.materials.FloatAttribute;
-import com.badlogic.gdx.graphics.g3d.materials.Material;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.FloatAttribute;
+import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.g3d.environment.DirectionalShadowLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.bullet.Bullet;
-import com.badlogic.gdx.physics.bullet.btBoxShape;
-import com.badlogic.gdx.physics.bullet.btBroadphaseInterface;
-import com.badlogic.gdx.physics.bullet.btCollisionConfiguration;
-import com.badlogic.gdx.physics.bullet.btCollisionDispatcher;
-import com.badlogic.gdx.physics.bullet.btCollisionObject;
-import com.badlogic.gdx.physics.bullet.btCollisionShape;
-import com.badlogic.gdx.physics.bullet.btCollisionWorld;
-import com.badlogic.gdx.physics.bullet.btConstraintSolver;
-import com.badlogic.gdx.physics.bullet.btDbvtBroadphase;
-import com.badlogic.gdx.physics.bullet.btDefaultCollisionConfiguration;
-import com.badlogic.gdx.physics.bullet.btDiscreteDynamicsWorld;
-import com.badlogic.gdx.physics.bullet.btDynamicsWorld;
-import com.badlogic.gdx.physics.bullet.btMotionState;
-import com.badlogic.gdx.physics.bullet.btRigidBody;
-import com.badlogic.gdx.physics.bullet.btRigidBodyConstructionInfo;
-import com.badlogic.gdx.physics.bullet.btSequentialImpulseConstraintSolver;
-import com.badlogic.gdx.physics.bullet.btSphereShape;
+import com.badlogic.gdx.physics.bullet.collision.btBoxShape;
+import com.badlogic.gdx.physics.bullet.collision.btBroadphaseInterface;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionConfiguration;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionDispatcher;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionShape;
+import com.badlogic.gdx.physics.bullet.collision.btDbvtBroadphase;
+import com.badlogic.gdx.physics.bullet.collision.btDefaultCollisionConfiguration;
+import com.badlogic.gdx.physics.bullet.collision.btSphereShape;
+import com.badlogic.gdx.physics.bullet.dynamics.btConstraintSolver;
+import com.badlogic.gdx.physics.bullet.dynamics.btDiscreteDynamicsWorld;
+import com.badlogic.gdx.physics.bullet.dynamics.btDynamicsWorld;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBody;
+import com.badlogic.gdx.physics.bullet.dynamics.btRigidBodyConstructionInfo;
+import com.badlogic.gdx.physics.bullet.dynamics.btSequentialImpulseConstraintSolver;
+import com.badlogic.gdx.physics.bullet.linearmath.btDefaultMotionState;
 import com.badlogic.gdx.utils.Array;
 
 /** @author xoppa */
 public class BasicBulletTest extends BulletTest {
-	// MotionState syncs the transform (position, rotation) between bullet and the model instance.
-	public static class MotionState extends btMotionState {
-		public Matrix4 transform;
-		public MotionState(final Matrix4 transform) {
-			this.transform = transform;
-		}
-		@Override
-		public void getWorldTransform (Matrix4 worldTrans) {
-			worldTrans.set(transform);
-		}
-		@Override
-		public void setWorldTransform (Matrix4 worldTrans) {
-			transform.set(worldTrans);
-		}
-	}
-	
 	ModelBatch modelBatch;
-	Lights lights = new Lights(0.2f, 0.2f, 0.2f).add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -0.5f, -1f, -0.7f));
+	Environment lights;
 	ModelBuilder modelBuilder = new ModelBuilder();
 	
 	btCollisionConfiguration collisionConfiguration;
@@ -83,7 +67,7 @@ public class BasicBulletTest extends BulletTest {
 
 	Array<Model> models = new Array<Model>();
 	Array<ModelInstance> instances = new Array<ModelInstance>();
-	Array<MotionState> motionStates = new Array<MotionState>();
+	Array<btDefaultMotionState> motionStates = new Array<btDefaultMotionState>();
 	Array<btRigidBodyConstructionInfo> bodyInfos = new Array<btRigidBodyConstructionInfo>();
 	Array<btCollisionShape> shapes = new Array<btCollisionShape>();
 	Array<btRigidBody> bodies = new Array<btRigidBody>();	
@@ -92,6 +76,11 @@ public class BasicBulletTest extends BulletTest {
 	public void create () {
 		super.create();
 		instructions = "Swipe for next test";
+		
+		lights = new Environment();
+		lights.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.2f, 0.2f, 0.2f, 1.f));
+		lights.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -0.5f, -1f, -0.7f));
+		
 		// Set up the camera
 		final float width = Gdx.graphics.getWidth();
 		final float height = Gdx.graphics.getHeight();
@@ -135,10 +124,11 @@ public class BasicBulletTest extends BulletTest {
 		// Create the ground
 		ModelInstance ground = new ModelInstance(groundModel);
 		instances.add(ground);
-		MotionState groundMotionState = new MotionState(ground.transform);
+		btDefaultMotionState groundMotionState = new btDefaultMotionState();
+		groundMotionState.setWorldTransform(ground.transform);
 		motionStates.add(groundMotionState);
 		btRigidBody groundBody = new btRigidBody(groundInfo);
-		groundInfo.setMotionState(groundMotionState);
+		groundBody.setMotionState(groundMotionState);
 		bodies.add(groundBody);
 		collisionWorld.addRigidBody(groundBody);
 		// Create the spheres
@@ -147,11 +137,12 @@ public class BasicBulletTest extends BulletTest {
 				for (float z = 0f; z <= 0f; z+= 2f) {
 					ModelInstance sphere = new ModelInstance(sphereModel);
 					instances.add(sphere);
-					sphere.transform.trn(x, y, z);
-					MotionState sphereMotionState = new MotionState(sphere.transform);
+					sphere.transform.trn(x+0.1f*MathUtils.random(), y+0.1f*MathUtils.random(), z+0.1f*MathUtils.random());
+					btDefaultMotionState sphereMotionState = new btDefaultMotionState();
+					sphereMotionState.setWorldTransform(sphere.transform);
 					motionStates.add(sphereMotionState);
 					btRigidBody sphereBody = new btRigidBody(sphereInfo);
-					sphereInfo.setMotionState(sphereMotionState);
+					sphereBody.setMotionState(sphereMotionState);
 					bodies.add(sphereBody);
 					collisionWorld.addRigidBody(sphereBody);
 				}
@@ -171,6 +162,11 @@ public class BasicBulletTest extends BulletTest {
 		((btDynamicsWorld)collisionWorld).stepSimulation(Gdx.graphics.getDeltaTime(), 5);
 		performanceCounter.stop();
 		
+		int c = motionStates.size;
+		for (int i = 0; i < c; i++) {
+			motionStates.get(i).getWorldTransform(instances.get(i).transform);
+		}
+		
 		modelBatch.begin(camera);
 		modelBatch.render(instances, lights);
 		modelBatch.end();
@@ -182,23 +178,23 @@ public class BasicBulletTest extends BulletTest {
 	
 	@Override
 	public void dispose () {
-		collisionWorld.delete();
-		solver.delete();
-		broadphase.delete();
-		dispatcher.delete();
-		collisionConfiguration.delete();
+		collisionWorld.dispose();
+		solver.dispose();
+		broadphase.dispose();
+		dispatcher.dispose();
+		collisionConfiguration.dispose();
 		
 		for (btRigidBody body : bodies)
-			body.delete();
+			body.dispose();
 		bodies.clear();
-		for (MotionState motionState : motionStates)
-			motionState.delete();
+		for (btDefaultMotionState motionState : motionStates)
+			motionState.dispose();
 		motionStates.clear();
 		for (btCollisionShape shape : shapes)
-			shape.delete();
+			shape.dispose();
 		shapes.clear();
 		for (btRigidBodyConstructionInfo info : bodyInfos)
-			info.delete();
+			info.dispose();
 		bodyInfos.clear();
 		
 		modelBatch.dispose();

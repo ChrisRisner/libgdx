@@ -18,11 +18,11 @@ package com.badlogic.gdx.tests.bullet;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.physics.bullet.ContactResultCallback;
-import com.badlogic.gdx.physics.bullet.btCollisionObject;
-import com.badlogic.gdx.physics.bullet.btCollisionObjectWrapper;
-import com.badlogic.gdx.physics.bullet.btManifoldPoint;
-import com.badlogic.gdx.physics.bullet.btPersistentManifold;
+import com.badlogic.gdx.physics.bullet.collision.ContactResultCallback;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionObject;
+import com.badlogic.gdx.physics.bullet.collision.btCollisionObjectWrapper;
+import com.badlogic.gdx.physics.bullet.collision.btManifoldPoint;
+import com.badlogic.gdx.physics.bullet.collision.btPersistentManifold;
 import com.badlogic.gdx.tests.bullet.CollisionWorldTest.TestContactResultCallback;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
@@ -39,8 +39,8 @@ public class CollisionTest extends ShootTest {
 		@Override
 		public float addSingleResult (btManifoldPoint cp, btCollisionObjectWrapper colObj0Wrap, int partId0, int index0,
 			btCollisionObjectWrapper colObj1Wrap, int partId1, int index1) {
-			btCollisionObject other = colObj0Wrap.getM_collisionObject() == projectile.body ?
-					colObj1Wrap.getM_collisionObject() : colObj0Wrap.getM_collisionObject();
+			btCollisionObject other = colObj0Wrap.getCollisionObject() == projectile.body ?
+					colObj1Wrap.getCollisionObject() : colObj0Wrap.getCollisionObject();
 			if (other != null && other.userData != null && other.userData instanceof BulletEntity) {
 				BulletEntity ent = (BulletEntity)other.userData;
 				if (ent != ground && !hits.contains(ent, true))
